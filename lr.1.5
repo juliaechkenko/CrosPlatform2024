@@ -1,0 +1,93 @@
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+// Інтерфейс для обчислення значення
+interface Evaluatable {
+    double evalf(double x);
+}
+
+// Клас, що реалізує інтерфейс Evaluatable (функція F1)
+class F1 implements Evaluatable {
+    @Override
+    public double evalf(double x) {
+        return Math.exp(-Math.abs(2.5 * x)) * Math.sin(x);
+    }
+}
+
+// Клас, що реалізує інтерфейс Evaluatable (функція F2)
+class F2 implements Evaluatable {
+    @Override
+    public double evalf(double x) {
+        return x * x;
+    }
+}
+
+// Проксі для профілювання методів
+class MethodProfiler implements InvocationHandler {
+    private Object target;
+
+    public MethodProfiler(Object target) {
+        this.target = target;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        long startTime = System.nanoTime();
+        Object result = method.invoke(target, args);
+        long elapsedTime = System.nanoTime() - startTime;
+        System.out.println("[" + method.getName() + "] took " + elapsedTime + " ns");
+        return result;
+    }
+}
+
+// Проксі для трасування методів
+// Проксі для трасування методів
+class MethodTracer implements InvocationHandler {
+    private Object target;
+
+    public MethodTracer(Object target) {
+        this.target = target;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.print("[" + method.getName() + "]");
+        if (args != null && args.length > 0) {
+            System.out.print("(");
+            for (int i = 0; i < args.length; i++) {
+                if (i > 0) {
+                    System.out.print(", ");
+                }
+                System.out.print(args[i]);
+            }
+            System.out.print(")");
+        }
+        Object result = method.invoke(target, args);
+        System.out.println(" = " + result);
+        return result;
+    }
+}
+
+
+public class ProxyDemo {
+    public static void main(String[] args) {
+        // Створення об'єкта F1 з профілюванням
+        Evaluatable f1Proxy = (Evaluatable) Proxy.newProxyInstance(
+                ProxyDemo.class.getClassLoader(),
+                new Class[]{Evaluatable.class},
+                new MethodProfiler(new F1())
+        );
+
+        // Створення об'єкта F2 з трасуванням
+        Evaluatable f2Proxy = (Evaluatable) Proxy.newProxyInstance(
+                ProxyDemo.class.getClassLoader(),
+                new Class[]{Evaluatable.class},
+                new MethodTracer(new F2())
+        );
+
+        // Виклик методу evalf() для об'єктів з проксі
+        System.out.println("F1: " + f1Proxy.evalf(1.0));
+        System.out.println("F2: " + f2Proxy.evalf(1.0));
+    }
+}

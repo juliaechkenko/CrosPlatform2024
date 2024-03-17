@@ -1,0 +1,94 @@
+import java.lang.reflect.Array;
+
+public class ArrayManipulation {
+    public static void main(String[] args) {
+        // Створення одновимірного масиву типу int
+        int[] intArray = (int[]) createArray(int.class, 2);
+        printArray(intArray);
+
+        // Створення одновимірного масиву типу String
+        String[] stringArray = (String[]) createArray(String.class, 3);
+        printArray(stringArray);
+
+        // Створення одновимірного масиву типу Double
+        Double[] doubleArray = (Double[]) createArray(Double.class, 5);
+        printArray(doubleArray);
+
+        // Створення матриці типу int
+        int[][] intMatrix = (int[][]) createMatrix(int.class, 3, 5);
+        printMatrix(intMatrix);
+
+        // Зміна розміру матриці
+        intMatrix = (int[][]) resizeMatrix(intMatrix, 4, 6);
+        printMatrix(intMatrix);
+
+        intMatrix = (int[][]) resizeMatrix(intMatrix, 3, 7);
+        printMatrix(intMatrix);
+
+        // Зміна значень у матриці
+        intMatrix[0][0] = 0;
+        intMatrix[0][1] = 1;
+        intMatrix[1][0] = 10;
+        intMatrix[1][1] = 11;
+        printMatrix(intMatrix);
+    }
+
+    // Метод для створення одновимірного масиву
+    public static Object createArray(Class<?> type, int size) {
+        return Array.newInstance(type, size);
+    }
+
+    // Метод для створення матриці
+    public static Object createMatrix(Class<?> type, int rows, int columns) {
+        return Array.newInstance(type, rows, columns);
+    }
+
+    // Метод для зміни розміру матриці
+    public static Object resizeMatrix(Object matrix, int newRows, int newColumns) {
+        Class<?> componentType = matrix.getClass().getComponentType().getComponentType();
+        Object newArray = Array.newInstance(componentType, newRows, newColumns);
+        int oldRows = Array.getLength(matrix);
+        int oldColumns = Array.getLength(Array.get(matrix, 0));
+        int copyRows = Math.min(oldRows, newRows);
+        int copyColumns = Math.min(oldColumns, newColumns);
+
+        for (int i = 0; i < copyRows; i++) {
+            Object oldRow = Array.get(matrix, i);
+            Object newRow = Array.get(newArray, i);
+            System.arraycopy(oldRow, 0, newRow, 0, copyColumns);
+        }
+
+        return newArray;
+    }
+
+    // Метод для виведення одновимірного масиву
+    public static void printArray(Object array) {
+        int length = Array.getLength(array);
+        System.out.print(array.getClass().getComponentType().getName() + "[" + length + "] = {");
+        for (int i = 0; i < length; i++) {
+            if (i > 0) {
+                System.out.print(", ");
+            }
+            System.out.print(Array.get(array, i));
+        }
+        System.out.println("}");
+    }
+
+    // Метод для виведення матриці
+    public static void printMatrix(Object matrix) {
+        int rows = Array.getLength(matrix);
+        int columns = Array.getLength(Array.get(matrix, 0));
+        System.out.println(matrix.getClass().getComponentType().getComponentType().getName() + "[" + rows + "][" + columns + "] = {");
+        for (int i = 0; i < rows; i++) {
+            System.out.print("  {");
+            for (int j = 0; j < columns; j++) {
+                if (j > 0) {
+                    System.out.print(", ");
+                }
+                System.out.print(Array.get(Array.get(matrix, i), j));
+            }
+            System.out.println("}");
+        }
+        System.out.println("}");
+    }
+}

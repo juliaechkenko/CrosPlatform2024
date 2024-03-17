@@ -1,0 +1,165 @@
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Scanner;
+
+// Клас для представлення інформації про конструктор
+class ConstructorInfo {
+    private Constructor<?> constructor;
+
+    public ConstructorInfo(Constructor<?> constructor) {
+        this.constructor = constructor;
+    }
+
+    public Constructor<?> getConstructor() {
+        return constructor;
+    }
+
+    @Override
+    public String toString() {
+        return constructor.toString();
+    }
+}
+
+// Клас для представлення інформації про метод
+class MethodInfo {
+    private Method method;
+
+    public MethodInfo(Method method) {
+        this.method = method;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    @Override
+    public String toString() {
+        return method.toString();
+    }
+}
+
+// Клас, який містить допоміжні методи для роботи з рефлексією
+class ReflectionHelper {
+    public static ConstructorInfo[] getConstructorsInfo(Class<?> clazz) {
+        Constructor<?>[] constructors = clazz.getConstructors();
+        ConstructorInfo[] constructorInfos = new ConstructorInfo[constructors.length];
+        for (int i = 0; i < constructors.length; i++) {
+            constructorInfos[i] = new ConstructorInfo(constructors[i]);
+        }
+        return constructorInfos;
+    }
+
+    public static MethodInfo[] getMethodsInfo(Class<?> clazz) {
+        Method[] methods = clazz.getMethods();
+        MethodInfo[] methodInfos = new MethodInfo[methods.length];
+        for (int i = 0; i < methods.length; i++) {
+            methodInfos[i] = new MethodInfo(methods[i]);
+        }
+        return methodInfos;
+    }
+}
+
+public class ReflectionDemo {
+    public static void main(String[] args) throws Exception {
+        // Вибираємо клас для аналізу
+        Class<?> clazz = CheckNext.class;
+
+        // Отримуємо інформацію про конструктори
+        ConstructorInfo[] constructors = ReflectionHelper.getConstructorsInfo(clazz);
+
+        // Виводимо список конструкторів
+        System.out.println("Constructors:");
+        for (int i = 0; i < constructors.length; i++) {
+            System.out.println((i + 1) + "). " + constructors[i]);
+        }
+
+        // Вибираємо конструктор
+        int constructorIndex = selectConstructor();
+        Constructor<?> selectedConstructor = constructors[constructorIndex - 1].getConstructor();
+
+        // Отримуємо параметри конструктора
+        Object[] constructorArgs = getConstructorArgs(selectedConstructor);
+
+        // Створюємо об'єкт з обраним конструктором та параметрами
+        Object instance = selectedConstructor.newInstance(constructorArgs);
+
+        // Виводимо стан об'єкта
+        System.out.println("Object: " + instance);
+
+        // Отримуємо інформацію про методи
+        MethodInfo[] methods = ReflectionHelper.getMethodsInfo(clazz);
+
+        // Виводимо список методів
+        System.out.println("\nMethods:");
+        for (int i = 0; i < methods.length; i++) {
+            System.out.println((i + 1) + "). " + methods[i]);
+        }
+
+        // Вибираємо метод для виклику
+        int methodIndex = selectMethod();
+        Method selectedMethod = methods[methodIndex - 1].getMethod();
+
+        // Викликаємо обраний метод
+        Object result = selectedMethod.invoke(instance);
+        System.out.println("Method result: " + result);
+    }
+
+    // Метод для вибору конструктора
+    private static int selectConstructor() {
+        System.out.println("\nInput the Number of Constructor [1 ,4]:");
+        Scanner scanner = new Scanner(System.in);
+        return scanner.nextInt();
+    }
+
+    // Метод для отримання аргументів конструктора
+    private static Object[] getConstructorArgs(Constructor<?> constructor) {
+        Class<?>[] parameterTypes = constructor.getParameterTypes();
+        Object[] args = new Object[parameterTypes.length];
+        Scanner scanner = new Scanner(System.in);
+        for (int i = 0; i < parameterTypes.length; i++) {
+            System.out.println("Input the value for parameter " + (i + 1) + ":");
+            if (parameterTypes[i] == int.class) {
+                args[i] = scanner.nextInt();
+            } else if (parameterTypes[i] == double.class) {
+                args[i] = scanner.nextDouble();
+            } else if (parameterTypes[i] == String.class) {
+                args[i] = scanner.next();
+            } else {
+                // Додайте обробку інших типів даних, якщо потрібно
+            }
+        }
+        return args;
+    }
+
+    // Метод для вибору методу
+    private static int selectMethod() {
+        System.out.println("\nInput the Number of Method [1 ,2]:");
+        Scanner scanner = new Scanner(System.in);
+        return scanner.nextInt();
+    }
+}
+
+// Приклад класу, який ми аналізуємо
+class CheckNext {
+    private int originX;
+    private int originY;
+    private int positionX;
+    private int positionY;
+
+    public CheckNext(int originX, int originY) {
+        this.originX = originX;
+        this.originY = originY;
+    }
+
+    public CheckNext(int originX, int originY, int positionX, int positionY) {
+        this.originX = originX;
+        this.originY = originY;
+        this.positionX = positionX;
+        this.positionY = positionY;
+    }
+
+    public void printCoordinates() {
+        System.out.println("Origin: (" + originX + ", " + originY + ")");
+        System.out.println("Position: (" + positionX + ", " + positionY + ")");
+    }
+}

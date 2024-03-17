@@ -1,0 +1,69 @@
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
+
+public class MethodInvoker {
+
+    public static void invokeMethod(Object object, String methodName, List<Object> parameters) throws FunctionNotFoundException {
+        try {
+            // Отримуємо класи параметрів
+            Class<?>[] parameterTypes = new Class<?>[parameters.size()];
+            for (int i = 0; i < parameters.size(); i++) {
+                parameterTypes[i] = parameters.get(i).getClass();
+            }
+
+            // Отримуємо метод за ім'ям та типами параметрів
+            Method method = object.getClass().getMethod(methodName, parameterTypes);
+
+            // Виводимо інформацію про виклик методу
+            System.out.println("Типи: " + parameterTypesToString(parameterTypes) + ", значення: " + parameters);
+
+            // Викликаємо метод з переданими параметрами
+            Object result = method.invoke(object, parameters.toArray());
+
+            System.out.println("Результат виклику: " + result);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new FunctionNotFoundException("Метод не знайдено або неможливо викликати на цьому об'єкті.", e);
+        }
+    }
+
+    private static String parameterTypesToString(Class<?>[] parameterTypes) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < parameterTypes.length; i++) {
+            builder.append(parameterTypes[i].getSimpleName());
+            if (i < parameterTypes.length - 1) {
+                builder.append(", ");
+            }
+        }
+        return builder.toString();
+    }
+
+    public static void main(String[] args) {
+        try {
+            // Створюємо об'єкт для виклику методу
+            TestClass testObject = new TestClass();
+
+            // Викликаємо метод з різними параметрами
+            invokeMethod(testObject, "evaluate", List.of(1.0));
+            invokeMethod(testObject, "evaluate", List.of(1.0, 1));
+        } catch (FunctionNotFoundException e) {
+            System.out.println("Помилка: " + e.getMessage());
+        }
+    }
+}
+
+class TestClass {
+    public double evaluate(double a) {
+        return Math.exp(-Math.abs(a) * 1) * Math.sin(1);
+    }
+
+    public double evaluate(double a, int x) {
+        return Math.exp(-Math.abs(a) * x) * Math.sin(x);
+    }
+}
+
+class FunctionNotFoundException extends Exception {
+    public FunctionNotFoundException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}
