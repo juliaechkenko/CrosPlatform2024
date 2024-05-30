@@ -1,0 +1,17 @@
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+import java.util.List; // Імпортуйте необхідний клас
+
+public interface ConferenceRegistration extends Remote {
+    // Метод для реєстрації учасника
+    void registerParticipant(Participant participant) throws RemoteException;
+
+    // Метод для експорту даних у формат XML
+    void exportToXML(String filePath) throws RemoteException;
+
+    // Метод для імпорту даних з формату XML
+    void importFromXML(String filePath) throws RemoteException;
+
+    // Метод для отримання списку учасників
+    List<Participant> getParticipants() throws RemoteException;
+}
