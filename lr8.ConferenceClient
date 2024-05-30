@@ -1,0 +1,103 @@
+import java.awt.*; // 
+import java.awt.event.*; 
+import javax.swing.*; 
+import java.rmi.Naming; 
+
+public class ConferenceClient {
+    private JFrame frame; // Головне вікно програми
+    private JTextField nameField; // Текстове поле для введення імені
+    private JTextField emailField; // Текстове поле для введення електронної пошти
+    private JTextField orgField; // Текстове поле для введення організації
+    private ConferenceRegistration conferenceRegistration; // Інтерфейс для взаємодії з віддаленим сервером
+
+    // Головний метод програми, який запускає графічний інтерфейс
+    public static void main(String[] args) {
+        EventQueue.invokeLater(() -> {
+            try {
+                ConferenceClient window = new ConferenceClient(); // Створення нового екземпляру ConferenceClient
+                window.frame.setVisible(true); // Зробити головне вікно видимим
+            } catch (Exception e) {
+                e.printStackTrace(); // Друк стека викликів у випадку винятку
+            }
+        });
+    }
+
+    // Конструктор класу ConferenceClient
+    public ConferenceClient() {
+        try {
+            // Підключення до віддаленого об'єкта ConferenceRegistration за допомогою RMI
+            conferenceRegistration = (ConferenceRegistration) Naming.lookup("//localhost/ConferenceRegistration");
+        } catch (Exception e) {
+            e.printStackTrace(); // Друк стека викликів у випадку винятку
+        }
+        initialize(); // Виклик методу для ініціалізації графічного інтерфейсу
+    }
+
+    // Метод для ініціалізації графічного інтерфейсу
+    private void initialize() {
+        frame = new JFrame(); // Створення нового вікна
+        frame.setBounds(100, 100, 450, 300); // Встановлення розмірів і позиції вікна
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Завершення програми при закритті вікна
+        frame.getContentPane().setLayout(null); // Вимкнення менеджера компоновки
+
+        // Додавання і налаштування мітки для поля "Name"
+        JLabel lblName = new JLabel("Name:");
+        lblName.setBounds(10, 30, 80, 14);
+        frame.getContentPane().add(lblName);
+
+        // Додавання і налаштування текстового поля для введення імені
+        nameField = new JTextField();
+        nameField.setBounds(100, 27, 200, 20);
+        frame.getContentPane().add(nameField);
+        nameField.setColumns(10);
+
+        // Додавання і налаштування мітки для поля "Email"
+        JLabel lblEmail = new JLabel("Email:");
+        lblEmail.setBounds(10, 70, 80, 14);
+        frame.getContentPane().add(lblEmail);
+
+        // Додавання і налаштування текстового поля для введення електронної пошти
+        emailField = new JTextField();
+        emailField.setBounds(100, 67, 200, 20);
+        frame.getContentPane().add(emailField);
+        emailField.setColumns(10);
+
+        // Додавання і налаштування мітки для поля "Organization"
+        JLabel lblOrg = new JLabel("Organization:");
+        lblOrg.setBounds(10, 110, 80, 14);
+        frame.getContentPane().add(lblOrg);
+
+        // Додавання і налаштування текстового поля для введення організації
+        orgField = new JTextField();
+        orgField.setBounds(100, 107, 200, 20);
+        frame.getContentPane().add(orgField);
+        orgField.setColumns(10);
+
+        // Додавання і налаштування кнопки "Register"
+        JButton btnRegister = new JButton("Register");
+        btnRegister.setBounds(150, 150, 100, 23);
+        frame.getContentPane().add(btnRegister);
+
+        // Додавання слухача дій для кнопки "Register"
+        btnRegister.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    // Отримання введених даних з текстових полів
+                    String name = nameField.getText();
+                    String email = emailField.getText();
+                    String organization = orgField.getText();
+                    // Створення нового об'єкта Participant
+                    Participant participant = new Participant(name, email, organization);
+                    // Реєстрація учасника за допомогою віддаленого методу
+                    conferenceRegistration.registerParticipant(participant);
+                    // Відображення повідомлення про успішну реєстрацію
+                    JOptionPane.showMessageDialog(frame, "Participant registered successfully!");
+                } catch (Exception ex) {
+                    ex.printStackTrace(); // Друк стека викликів у випадку винятку
+                    // Відображення повідомлення про помилку
+                    JOptionPane.showMessageDialog(frame, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+    }
+}
